@@ -16,6 +16,7 @@ interface AuthContextValue {
   loading: boolean;
   signup: (body: SignupBody) => Promise<void>;
   signin: (body: SigninBody) => Promise<void>;
+  signinFromOAuth: (resp: AuthResponse) => void;
   logout: () => Promise<void>;
 }
 
@@ -124,6 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persist, router],
   );
 
+  const signinFromOAuth = useCallback(
+    (resp: AuthResponse) => {
+      persist(resp);
+      router.push('/feed');
+    },
+    [persist, router],
+  );
+
   const logout = useCallback(async () => {
     const refresh_token = refreshTokenRef.current;
     if (refresh_token) {
@@ -134,8 +143,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clear, router]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, loading, signup, signin, logout }),
-    [user, loading, signup, signin, logout],
+    () => ({ user, loading, signup, signin, signinFromOAuth, logout }),
+    [user, loading, signup, signin, signinFromOAuth, logout],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
