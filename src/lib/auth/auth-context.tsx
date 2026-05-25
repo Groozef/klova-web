@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, configureApiAuth } from '@/lib/api/client';
+import { authLog } from '@/lib/debug';
 import type { AuthResponse, Role, Locale } from '@/lib/api/types';
 
 interface AuthUser {
@@ -44,8 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const accessTokenRef = useRef<string | null>(null);
   const refreshTokenRef = useRef<string | null>(null);
+  const refreshInFlight = useRef<Promise<string | null> | null>(null);
 
   const persist = useCallback((resp: AuthResponse) => {
+    authLog('persist', resp.user.id);
     accessTokenRef.current = resp.access_token;
     refreshTokenRef.current = resp.refresh_token;
     if (typeof window !== 'undefined') {
@@ -56,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clear = useCallback(() => {
+    authLog('clear');
     accessTokenRef.current = null;
     refreshTokenRef.current = null;
     if (typeof window !== 'undefined') {
@@ -65,21 +69,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  // Deduplicated lazy refresh — called by api/client on 401, never proactively here.
   const refresh = useCallback(async (): Promise<string | null> => {
+    if (refreshInFlight.current) return refreshInFlight.current;
     const refresh_token = refreshTokenRef.current;
     if (!refresh_token) return null;
-    try {
-      const resp = await api<AuthResponse>('/auth/refresh', {
-        method: 'POST',
-        body: { refresh_token },
-        skipAuth: true,
-      });
-      persist(resp);
-      return resp.access_token;
-    } catch {
-      clear();
-      return null;
-    }
+
+    const promise = (async () => {
+      try {
+        authLog('refresh:start');
+        const resp = await api<AuthResponse>('/auth/refresh', {
+          method: 'POST',
+          body: { refresh_token },
+          skipAuth: true,
+        });
+        persist(resp);
+        authLog('refresh:success');
+        return resp.access_token;
+      } catch (err) {
+        authLog('refresh:fail', err);
+        clear();
+        return null;
+      } finally {
+        refreshInFlight.current = null;
+      }
+    })();
+
+    refreshInFlight.current = promise;
+    return promise;
   }, [persist, clear]);
 
   useEffect(() => {
@@ -89,7 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }, [refresh]);
 
-  // Restore session on mount
+  // Restore session from cache: do NOT call refresh proactively.
+  // Refresh fires lazily on the first 401 from api/client.
+  // This avoids the React-strict-mode double-mount race where the
+  // first refresh rotates the token and the second arrives with the
+  // already-revoked one, kicking the user back to /auth/signin.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const stored = localStorage.getItem(REFRESH_KEY);
@@ -97,15 +118,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (stored && cachedUser) {
       refreshTokenRef.current = stored;
       try {
-        setUser(JSON.parse(cachedUser) as AuthUser);
+        const parsed = JSON.parse(cachedUser) as AuthUser;
+        setUser(parsed);
+        authLog('restore:cached', parsed.id);
       } catch {
-        // ignore
+        authLog('restore:parse-failed');
       }
-      refresh().finally(() => setLoading(false));
     } else {
-      setLoading(false);
+      authLog('restore:no-cache');
     }
-  }, [refresh]);
+    setLoading(false);
+  }, []);
 
   const signup = useCallback(
     async (body: SignupBody) => {
@@ -128,7 +151,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signinFromOAuth = useCallback(
     (resp: AuthResponse) => {
       persist(resp);
-      router.push('/feed');
+      // Hard navigation: forces a fresh React tree on /feed so the AuthProvider
+      // restore picks up the just-persisted tokens cleanly, no cross-page races.
+      if (typeof window !== 'undefined') {
+        window.location.assign('/feed');
+      } else {
+        router.push('/feed');
+      }
     },
     [persist, router],
   );

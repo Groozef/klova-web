@@ -1,3 +1,5 @@
+import { apiLog } from '@/lib/debug';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
 export interface ApiError extends Error {
@@ -31,6 +33,7 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
 
 export async function api<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, skipAuth, retried, headers, ...rest } = options;
+  const method = (rest.method ?? 'GET').toUpperCase();
 
   const merged: HeadersInit = {
     'Content-Type': 'application/json',
@@ -42,6 +45,9 @@ export async function api<T = unknown>(path: string, options: RequestOptions = {
     if (token) (merged as Record<string, string>).Authorization = `Bearer ${token}`;
   }
 
+  const started = Date.now();
+  apiLog(`→ ${method}`, path);
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...rest,
     headers: merged,
@@ -49,6 +55,7 @@ export async function api<T = unknown>(path: string, options: RequestOptions = {
   });
 
   if (res.status === 401 && !skipAuth && !retried) {
+    apiLog('← 401, refreshing token');
     const fresh = await refreshAccessToken();
     if (fresh) {
       return api<T>(path, { ...options, retried: true });
@@ -57,14 +64,17 @@ export async function api<T = unknown>(path: string, options: RequestOptions = {
 
   const isJson = res.headers.get('content-type')?.includes('application/json');
   const payload = isJson ? await res.json().catch(() => undefined) : await res.text().catch(() => undefined);
+  const ms = Date.now() - started;
 
   if (!res.ok) {
     const message =
       (typeof payload === 'object' && payload && 'message' in payload && String((payload as any).message)) ||
       `Request failed (${res.status})`;
+    apiLog(`← ${res.status} ${path} (${ms}ms)`, payload);
     throw new ApiErrorImpl(res.status, message, payload);
   }
 
+  apiLog(`← ${res.status} ${path} (${ms}ms)`);
   return payload as T;
 }
 
