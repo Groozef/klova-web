@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# klova-web
 
-## Getting Started
+Web frontend for **Klova** — маркетплейс самозанятых СНГ с эскроу-защитой и налоговым помощником.
 
-First, run the development server:
+Talks to [`klova-api`](https://github.com/Groozef/klova-api) over REST.
+
+Status: **MVP** — функциональный фронт под весь backend flow (auth → orders → deals → tax), без всех артбордов и полной полировки.
+
+## Stack
+
+- **Next.js 16** (App Router) + React 19
+- **TypeScript** strict
+- **Tailwind CSS 4** с design-tokens из брендбука (`@theme inline`)
+- **SWR** для data fetching
+- **next/font** — Manrope + JetBrains Mono
+- Auth: JWT access (in-memory) + refresh (localStorage), автоматический rotation на 401
+
+## Pages
+
+| Path | Auth | Purpose |
+|---|---|---|
+| `/` | public | Landing с hero и принципами |
+| `/auth/signup` | public | Регистрация (email/password + Google OAuth) |
+| `/auth/signin` | public | Вход |
+| `/feed` | jwt | Рекомендованные заказы по специализациям |
+| `/orders` | jwt | Каталог заказов + фильтр по категории |
+| `/orders/new` | jwt | Создать заказ |
+| `/orders/[id]` | jwt | Детали заказа + отклики + accept |
+| `/deals` | jwt | Список сделок |
+| `/deals/[id]` | jwt | Lifecycle сделки + транзакции + tax |
+| `/notifications` | jwt | Inbox с пометкой прочитанным |
+| `/chats` | jwt | Список чатов |
+| `/tax` | jwt | Сводка и история налоговых начислений |
+| `/profile/me` | jwt | Свой профиль + редактирование |
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 22+
+- `klova-api` запущен (по умолчанию `http://localhost:3000`)
+
+### Setup
 
 ```bash
+npm install
+cp .env.example .env.local
+# отредактируй NEXT_PUBLIC_API_URL если бэк на другом порту
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Открой http://localhost:3001 (или другой порт если 3000 занят бэком).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> Запускай на порту **отличном от бэка** — Next по умолчанию возьмёт 3001 если 3000 занят, или укажи `next dev -p 3001`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+| Var | Required | Default | Purpose |
+|---|---|---|---|
+| `NEXT_PUBLIC_API_URL` | yes | `http://localhost:3000/api` | URL бэка klova-api |
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/
+│   ├── (app)/               protected route group with AppNav + auth gate
+│   │   ├── feed/            рекомендованные заказы
+│   │   ├── orders/          каталог + создание + детали
+│   │   ├── deals/           сделки + lifecycle
+│   │   ├── chats/           threads list
+│   │   ├── notifications/   inbox
+│   │   ├── tax/             сводка налогов
+│   │   ├── profile/me/      свой профиль
+│   │   └── layout.tsx       auth guard, top nav
+│   ├── auth/
+│   │   ├── signup/page.tsx
+│   │   ├── signin/page.tsx
+│   │   └── layout.tsx       чистый layout без nav
+│   ├── layout.tsx           root: html, fonts, AuthProvider
+│   ├── globals.css          design tokens + Tailwind theme
+│   └── page.tsx             landing
+├── components/
+│   ├── layout/app-nav.tsx
+│   └── ui/                  Button, Input, Textarea, Logo
+└── lib/
+    ├── api/
+    │   ├── client.ts        fetch wrapper + auto refresh on 401
+    │   ├── hooks.ts         SWR hooks по всем endpoints
+    │   └── types.ts         mirror enums/DTO от klova-api
+    └── auth/
+        └── auth-context.tsx React Context: signin/signup/logout/refresh
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Что не сделано (на следующую сессию)
 
-## Deploy on Vercel
+- Полная pixel-perfect реализация всех артбордов из `DesignAppWebMobile/`
+- Public profile (`/profile/[id]`) с публичным портфолио
+- Posts CRUD (создание постов в ленте, лайки)
+- Realtime сообщений (WebSocket вместо polling)
+- Загрузка медиа (S3/Backblaze) для аватаров и портфолио
+- PWA конфиг (manifest, service worker)
+- Mobile responsive шлифовка
+- Skeleton loaders вместо «Загружаю…»
+- Toast notifications для action feedback
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev    # dev server, hot reload
+npm run build  # production build
+npm run start  # serve built app
+npm run lint   # eslint
+```
+
+## Deploy
+
+- **Vercel** — самый простой путь, подключается к GitHub
+- **Railway / Fly.io** — если хочется единого хостинга с API
