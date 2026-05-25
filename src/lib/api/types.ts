@@ -54,6 +54,18 @@ export interface User {
   verified: boolean;
   rating: number;
   created_at: string;
+  categories?: Array<{ category: Category }>;
+}
+
+export interface Message {
+  id: string;
+  deal_id: string | null;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  sender?: { id: string; name: string; avatar_url: string | null };
 }
 
 export interface Country {

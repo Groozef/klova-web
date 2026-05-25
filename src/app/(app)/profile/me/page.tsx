@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useMe, useCategories, useCities, useCountries } from '@/lib/api/hooks';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,18 +23,32 @@ export default function MyProfilePage() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  const [selectedCats, setSelectedCats] = useState<Set<string>>(new Set());
+  const [savingCats, setSavingCats] = useState(false);
+  const initialCats = useMemo(
+    () => new Set((me?.categories ?? []).map((c) => c.category.id)),
+    [me?.categories],
+  );
+
   useEffect(() => {
     if (me) {
       setName(me.name);
       setBio(me.bio ?? '');
       setCityId(me.city_id ?? '');
       setRole(me.role);
+      setSelectedCats(new Set((me.categories ?? []).map((c) => c.category.id)));
     }
   }, [me]);
 
   useEffect(() => {
     if (countries && countries.length > 0 && !countryId) setCountryId(countries[0].id);
   }, [countries, countryId]);
+
+  const catsDirty = useMemo(() => {
+    if (selectedCats.size !== initialCats.size) return true;
+    for (const id of selectedCats) if (!initialCats.has(id)) return true;
+    return false;
+  }, [selectedCats, initialCats]);
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
@@ -51,6 +65,30 @@ export default function MyProfilePage() {
       setMsg(err instanceof Error ? err.message : 'Ошибка');
     } finally {
       setSaving(false);
+    }
+  }
+
+  function toggleCat(id: string) {
+    setSelectedCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function saveCats() {
+    setSavingCats(true);
+    try {
+      await api('/users/me/categories', {
+        method: 'PUT',
+        body: { category_ids: Array.from(selectedCats) },
+      });
+      await mutate('/users/me');
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : 'Ошибка сохранения категорий');
+    } finally {
+      setSavingCats(false);
     }
   }
 
@@ -85,7 +123,7 @@ export default function MyProfilePage() {
       </section>
 
       <section>
-        <h2 className="text-xl font-semibold mb-4">Редактировать профиль</h2>
+        <h2 className="text-xl font-semibold mb-4">Профиль</h2>
         <form onSubmit={onSave} className="flex flex-col gap-4">
           <Input label="Имя" value={name} onChange={(e) => setName(e.target.value)} required />
           <Textarea
@@ -147,9 +185,7 @@ export default function MyProfilePage() {
             </div>
           </div>
 
-          {msg && (
-            <div className="text-sm text-jade">{msg}</div>
-          )}
+          {msg && <div className="text-sm text-jade">{msg}</div>}
 
           <Button type="submit" loading={saving} size="lg" className="self-start">
             Сохранить
@@ -157,24 +193,43 @@ export default function MyProfilePage() {
         </form>
       </section>
 
-      {categories && (
-        <section>
-          <h2 className="text-xl font-semibold mb-2">Категории (just for context)</h2>
-          <p className="text-mute text-sm mb-4">
-            Управление специализациями — следующий релиз.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <span
-                key={c.id}
-                className="text-xs px-3 py-1.5 rounded-pill bg-ink-2 border border-line text-mute"
-              >
-                {c.name}
-              </span>
-            ))}
+      <section>
+        <div className="flex items-end justify-between mb-3">
+          <div>
+            <h2 className="text-xl font-semibold">Специализации</h2>
+            <p className="text-mute text-sm mt-1">
+              По этим категориям ты будешь видеть рекомендованные заказы в ленте.
+            </p>
           </div>
-        </section>
-      )}
+          {catsDirty && (
+            <Button size="sm" onClick={saveCats} loading={savingCats}>
+              Сохранить ({selectedCats.size})
+            </Button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2 p-4 rounded-md border border-line bg-ink-2 min-h-32">
+          {!categories && <div className="text-mute text-sm">Загружаю…</div>}
+          {categories?.map((c) => {
+            const active = selectedCats.has(c.id);
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => toggleCat(c.id)}
+                className={`text-sm px-3 py-1.5 rounded-pill transition-colors border ${
+                  active
+                    ? 'bg-jade text-paper-ink border-jade'
+                    : 'bg-ink-3 text-mute border-line hover:bg-ink-4'
+                }`}
+              >
+                {active ? '✓ ' : ''}
+                {c.name}
+              </button>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

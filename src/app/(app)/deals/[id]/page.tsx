@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useState } from 'react';
+import Link from 'next/link';
 import { useDeal, useMe } from '@/lib/api/hooks';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api/client';
@@ -75,6 +76,12 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
       </section>
 
       <section className="flex flex-wrap gap-3">
+        <Link
+          href={`/chats/deal/${id}`}
+          className="h-11 px-5 inline-flex items-center bg-ink-3 text-paper rounded-md font-medium hover:bg-ink-4 transition-colors"
+        >
+          Чат по сделке
+        </Link>
         {isCustomer && deal.status === 'escrow_held' && (
           <Button onClick={() => act(`/deals/${id}/pay`).then(() => act(`/deals/${id}/payment-confirm`))} loading={acting}>
             Оплатить (mock)
