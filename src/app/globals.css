@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+/* KLOVA design tokens — see brandbook in DesignAppWebMobile/klova/tokens.css */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Ink (dark surface stack) */
+  --kl-ink:        #0A1310;
+  --kl-ink-2:      #11201B;
+  --kl-ink-3:      #1A2D26;
+  --kl-ink-4:      #233B33;
+  --kl-line:       rgba(255, 255, 255, 0.07);
+  --kl-line-2:     rgba(255, 255, 255, 0.14);
+  --kl-mute:       rgba(232, 242, 236, 0.58);
+  --kl-mute-2:     rgba(232, 242, 236, 0.32);
+
+  /* Paper / inverse */
+  --kl-paper:      #F3EFE5;
+  --kl-paper-2:    #E6E0CF;
+  --kl-paper-ink:  #0E1612;
+
+  /* Signature jade — trust / escrow */
+  --kl-jade:       #3DDC97;
+  --kl-jade-deep:  #1FAA75;
+  --kl-jade-soft:  rgba(61, 220, 151, 0.16);
+  --kl-jade-line:  rgba(61, 220, 151, 0.34);
+
+  /* Secondary cobalt — finance / tax */
+  --kl-cobalt:     #5B6CFF;
+  --kl-cobalt-2:   #3D4FE0;
+  --kl-cobalt-soft:rgba(91, 108, 255, 0.18);
+
+  /* Warm sand/amber — KZ accent */
+  --kl-sand:       #E8C879;
+  --kl-amber:      #F5B544;
+
+  /* States */
+  --kl-coral:      #FF6B6B;
+  --kl-coral-deep: #D04848;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ink: var(--kl-ink);
+  --color-ink-2: var(--kl-ink-2);
+  --color-ink-3: var(--kl-ink-3);
+  --color-ink-4: var(--kl-ink-4);
+  --color-paper: var(--kl-paper);
+  --color-paper-ink: var(--kl-paper-ink);
+  --color-mute: var(--kl-mute);
+  --color-line: var(--kl-line);
+  --color-jade: var(--kl-jade);
+  --color-jade-deep: var(--kl-jade-deep);
+  --color-jade-soft: var(--kl-jade-soft);
+  --color-cobalt: var(--kl-cobalt);
+  --color-sand: var(--kl-sand);
+  --color-amber: var(--kl-amber);
+  --color-coral: var(--kl-coral);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+
+  --font-display: var(--font-manrope), system-ui, sans-serif;
+  --font-mono: var(--font-jbm), ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--kl-ink);
+  color: var(--kl-paper);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* utility for subtle film grain on hero surfaces */
+.kl-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.7;
 }

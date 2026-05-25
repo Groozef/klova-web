@@ -1,65 +1,127 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { Logo } from '@/components/ui/logo';
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen flex flex-col">
+      <header className="border-b border-line">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+          <Logo />
+          <nav className="flex items-center gap-4">
+            <Link href="/auth/signin" className="text-sm text-mute hover:text-paper transition-colors">
+              Войти
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="h-9 px-4 inline-flex items-center bg-jade text-paper-ink rounded-md text-sm font-medium hover:bg-jade-deep transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Регистрация
+            </Link>
+          </nav>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      <main className="flex-1">
+        <section className="relative overflow-hidden kl-grain">
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: '-20%',
+              right: '-10%',
+              width: 700,
+              height: 700,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(61,220,151,0.18), transparent 65%)',
+            }}
+          />
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              bottom: '-30%',
+              left: '-10%',
+              width: 600,
+              height: 600,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(91,108,255,0.12), transparent 65%)',
+            }}
+          />
+
+          <div className="relative max-w-6xl mx-auto px-6 py-24 lg:py-36">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-jade-soft border border-jade text-jade text-xs font-mono uppercase tracking-wider mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-jade animate-pulse" />
+              MVP · Алматы и Шымкент
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.95] max-w-3xl">
+              Работа,<br />
+              <span className="text-jade">защищённая</span> от кидков.
+            </h1>
+
+            <p className="mt-8 text-xl text-mute max-w-2xl leading-relaxed">
+              Маркетплейс самозанятых для СНГ. Эскроу-защита обеих сторон. Налоговый помощник внутри. Старт — Казахстан.
+            </p>
+
+            <div className="mt-12 flex flex-wrap items-center gap-4">
+              <Link
+                href="/auth/signup"
+                className="h-14 px-8 inline-flex items-center bg-jade text-paper-ink rounded-lg text-lg font-semibold hover:bg-jade-deep transition-colors"
+              >
+                Начать бесплатно
+              </Link>
+              <Link
+                href="/auth/signin"
+                className="h-14 px-8 inline-flex items-center border border-line rounded-lg text-lg hover:bg-ink-2 transition-colors"
+              >
+                У меня уже есть аккаунт
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-line bg-ink-2">
+          <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-6">
+            {[
+              {
+                n: '01',
+                title: 'Защита обеих сторон',
+                body: 'Эскроу-провайдер замораживает оплату до приёмки работы. Споры решает модерация.',
+                accent: 'bg-jade text-paper-ink',
+              },
+              {
+                n: '02',
+                title: 'Klova не держит деньги',
+                body: 'Лицензированный провайдер на всех этапах: приём, hold, выплата, фискальный чек.',
+                accent: 'bg-ink-3 text-paper',
+              },
+              {
+                n: '03',
+                title: 'Налог в одном клике',
+                body: '«Отложи 6 637 ₸ на налог по ИП-упр» — рекомендация после каждой сделки.',
+                accent: 'bg-ink-3 text-paper',
+              },
+            ].map((card) => (
+              <div
+                key={card.n}
+                className={`p-6 rounded-lg border border-line flex flex-col gap-3 ${card.accent}`}
+              >
+                <div className="text-xs font-mono opacity-70 tracking-wider">{card.n}</div>
+                <h3 className="text-xl font-semibold leading-tight">{card.title}</h3>
+                <p className="text-sm opacity-80 leading-relaxed">{card.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t border-line">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-sm text-mute">
+          <Logo size={24} />
+          <div className="flex gap-6">
+            <span>v0.1.0 · 2026</span>
+            <span className="text-jade">Старт — Казахстан</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
