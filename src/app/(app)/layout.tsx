@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppNav } from '@/components/layout/app-nav';
+import { VerifyEmailBanner } from '@/components/layout/verify-email-banner';
 import { useAuth } from '@/lib/auth/auth-context';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <AppNav />
+      <VerifyEmailBanner />
       <main className="flex-1">{children}</main>
     </div>
   );

@@ -4,8 +4,12 @@ import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { GoogleIcon } from '@/components/ui/google-icon';
+import { RedirectIfAuthed } from '@/components/auth/redirect-if-authed';
 import { useAuth } from '@/lib/auth/auth-context';
 import type { Role } from '@/lib/api/types';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
 export default function SignupPage() {
   const { signup } = useAuth();
@@ -36,6 +40,8 @@ export default function SignupPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <RedirectIfAuthed to="/feed" />
+
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Регистрация</h1>
         <p className="mt-2 text-sm text-mute">
@@ -44,10 +50,10 @@ export default function SignupPage() {
       </div>
 
       <a
-        href="http://localhost:3000/api/auth/google"
+        href={`${API_BASE}/auth/google`}
         className="h-11 inline-flex items-center justify-center gap-3 bg-paper text-paper-ink rounded-md font-medium hover:bg-paper-2 transition-colors"
       >
-        <span className="w-5 h-5 inline-flex items-center justify-center font-bold">G</span>
+        <GoogleIcon size={18} />
         Продолжить через Google
       </a>
 

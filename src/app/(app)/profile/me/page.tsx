@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useMe, useCategories, useCities, useCountries } from '@/lib/api/hooks';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -120,6 +121,12 @@ export default function MyProfilePage() {
             <span className="px-2 py-1 rounded-pill bg-ink-3 text-mute">★ {me.rating.toFixed(1)}</span>
           </div>
         </div>
+        <Link
+          href="/profile/me/security"
+          className="text-sm text-mute hover:text-jade transition-colors whitespace-nowrap"
+        >
+          Безопасность →
+        </Link>
       </section>
 
       <section>

@@ -10,6 +10,7 @@ import type {
   Portfolio,
   Post,
   Response,
+  Session,
   TaxRecord,
   Transaction,
   User,
@@ -105,4 +106,8 @@ export function useUserPortfolio(userId: string | null) {
 
 export function useFeed() {
   return useSWR<Post[]>('/posts', apiFetcher);
+}
+
+export function useSessions() {
+  return useSWR<Session[]>('/auth/sessions', apiFetcher);
 }
