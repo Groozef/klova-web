@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { GoogleIcon } from '@/components/ui/google-icon';
-import { RedirectIfAuthed } from '@/components/auth/redirect-if-authed';
+import { AlreadyAuthedNotice } from '@/components/auth/already-authed-notice';
 import { useAuth } from '@/lib/auth/auth-context';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
@@ -35,7 +35,7 @@ export default function SigninPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <RedirectIfAuthed to="/feed" />
+      <AlreadyAuthedNotice />
 
       <div>
         <h1 className="text-3xl font-bold tracking-tight">С возвращением</h1>

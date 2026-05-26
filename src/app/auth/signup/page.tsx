@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { GoogleIcon } from '@/components/ui/google-icon';
-import { RedirectIfAuthed } from '@/components/auth/redirect-if-authed';
+import { AlreadyAuthedNotice } from '@/components/auth/already-authed-notice';
 import { useAuth } from '@/lib/auth/auth-context';
 import type { Role } from '@/lib/api/types';
 
@@ -40,7 +40,7 @@ export default function SignupPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <RedirectIfAuthed to="/feed" />
+      <AlreadyAuthedNotice />
 
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Регистрация</h1>
