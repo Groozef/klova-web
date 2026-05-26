@@ -4,7 +4,11 @@ import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { GoogleIcon } from '@/components/ui/google-icon';
+import { RedirectIfAuthed } from '@/components/auth/redirect-if-authed';
 import { useAuth } from '@/lib/auth/auth-context';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
 export default function SigninPage() {
   const { signin } = useAuth();
@@ -31,16 +35,18 @@ export default function SigninPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <RedirectIfAuthed to="/feed" />
+
       <div>
         <h1 className="text-3xl font-bold tracking-tight">С возвращением</h1>
         <p className="mt-2 text-sm text-mute">Войдите чтобы продолжить работу.</p>
       </div>
 
       <a
-        href="http://localhost:3000/api/auth/google"
+        href={`${API_BASE}/auth/google`}
         className="h-11 inline-flex items-center justify-center gap-3 bg-paper text-paper-ink rounded-md font-medium hover:bg-paper-2 transition-colors"
       >
-        <span className="w-5 h-5 inline-flex items-center justify-center font-bold">G</span>
+        <GoogleIcon size={18} />
         Войти через Google
       </a>
 
@@ -53,6 +59,12 @@ export default function SigninPage() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Input label="Email" name="email" type="email" required placeholder="you@klova.kz" />
         <Input label="Пароль" name="password" type="password" required placeholder="••••••••" />
+
+        <div className="text-right">
+          <Link href="/auth/forgot-password" className="text-xs text-mute hover:text-jade transition-colors">
+            Забыл пароль?
+          </Link>
+        </div>
 
         {error && (
           <div className="p-3 rounded-md bg-coral/15 border border-coral/40 text-coral text-sm">
