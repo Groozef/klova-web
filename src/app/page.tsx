@@ -1,7 +1,32 @@
+'use client';
+
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Logo } from '@/components/ui/logo';
+import { useAuth } from '@/lib/auth/auth-context';
 
 export default function LandingPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/feed');
+    }
+  }, [user, loading, router]);
+
+  // While auth status is being resolved or we're about to redirect — show
+  // a quiet loader, NOT the marketing copy. Avoids the "flash of marketing"
+  // for returning users.
+  if (loading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ink">
+        <Logo size={48} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-line">
