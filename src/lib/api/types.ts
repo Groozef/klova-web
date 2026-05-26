@@ -54,7 +54,18 @@ export interface User {
   verified: boolean;
   rating: number;
   created_at: string;
+  email_verified_at?: string | null;
+  has_password?: boolean;
+  has_google?: boolean;
   categories?: Array<{ category: Category }>;
+}
+
+export interface Session {
+  id: string;
+  user_agent: string | null;
+  ip: string | null;
+  created_at: string;
+  expires_at: string;
 }
 
 export interface Message {
